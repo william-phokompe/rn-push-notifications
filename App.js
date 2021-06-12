@@ -28,6 +28,18 @@ export default function App() {
       });
   }, []);
 
+  useEffect((_) => {
+    const subscription = Notifications.addNotificationReceivedListener(
+      (notification) => {
+        console.log(notification);
+      }
+    ); // Allows to define a function that should be executed on an incoming notification when the app is in the foreground
+
+    return (_) => {
+      subscription.remove();
+    };
+  }, []);
+
   const triggerNotificationHandler = (_) => {
     Notifications.scheduleNotificationAsync({
       content: {
