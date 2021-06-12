@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, StyleSheet, Text, View } from "react-native";
 import * as Notifications from "expo-notifications";
 import * as Permissions from "expo-permissions";
@@ -13,6 +13,8 @@ Notifications.setNotificationHandler({
 });
 
 export default function App() {
+
+  const [pushToken, sePushToken] = useState();
   useEffect((_) => {
     Permissions.getAsync(Permissions.NOTIFICATIONS)
       .then((statusObj) => {
@@ -27,12 +29,19 @@ export default function App() {
         }
       })
       .then((_) => {
-        console.log("Getting token")
-        return Notifications.getExpoPushTokenAsync()
-      }).then(res => {
+        console.log("Getting token");
+        return Notifications.getExpoPushTokenAsync();
+      })
+      .then((res) => {
         //https://expo.io/notifications
-        const token = res.data
-      }).catch(errr => {
+        const token = res.data;
+
+        setPushToken(token);
+        // Sending a notification to another device
+        // get store the token on your own server, i.e:
+        // fetch('https://your-own-api.com/api) then use it to send it to that device
+      })
+      .catch((errr) => {
         console.log(errr);
         return null;
       });
@@ -67,12 +76,37 @@ export default function App() {
     });
   };
 
+  const triggerExpoNotificationHandler = (_) => {
+    fetch('https://exp.host/--/api/v2/push/send', {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Accept-Encoding': 'gzip, defate',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        to: pushToken,
+        data: {extraData: 'SomeData'},
+        title: 'Trigger From App',
+        body: 'This is a message from expo triggered from app'
+      })
+    })
+  };
+
   return (
     <View style={styles.container}>
-      <Button
-        title="Trigger Notification"
-        onPress={triggerNotificationHandler}
-      />
+      <View style={styles.buttonContainer}>
+        <Button
+          title="Trigger Notification"
+          onPress={triggerNotificationHandler}
+        />
+      </View>
+      <View>
+        <Button
+          title="Trigger Expo Notification"
+          onPress={triggerExpoNotificationHandler}
+        />
+      </View>
       <StatusBar style="auto" />
     </View>
   );
@@ -84,5 +118,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
+  },
+
+  buttonContainer: {
+    marginBottom: 10
   },
 });
