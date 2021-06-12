@@ -23,8 +23,17 @@ export default function App() {
       })
       .then((statusObj) => {
         if (statusObj.status !== "granted") {
-          return;
+          throw new Error("Permission denied!");
         }
+      })
+      .then((_) => {
+        console.log("Getting token")
+        return Notifications.getExpoPushTokenAsync()
+      }).then(data => {
+        console.log(data)
+      }).catch(errr => {
+        console.log(errr);
+        return null;
       });
   }, []);
 
