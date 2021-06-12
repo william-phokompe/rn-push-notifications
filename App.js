@@ -29,14 +29,19 @@ export default function App() {
   }, []);
 
   useEffect((_) => {
-    const subscription = Notifications.addNotificationReceivedListener(
-      (notification) => {
+    const backgroundSubscription =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log(response);
+      });
+
+    const foregroundSubscription =
+      Notifications.addNotificationReceivedListener((notification) => {
         console.log(notification);
-      }
-    ); // Allows to define a function that should be executed on an incoming notification when the app is in the foreground
+      }); // Allows to define a function that should be executed on an incoming notification when the app is in the foreground
 
     return (_) => {
-      subscription.remove();
+      backgroundSubscription.remove();
+      foregroundSubscription.remove();
     };
   }, []);
 
